@@ -118,6 +118,16 @@ body {
   background: #15803d;
 }
 
+/* Study Material Button Custom Styling */
+.tool-btn.study {
+  background: #0284c7;
+  grid-column: span 2; /* Spans across both columns for neat alignment */
+}
+
+.tool-btn.study:hover {
+  background: #0369a1;
+}
+
 /* Footer Section */
 .footer {
   text-align: center;
@@ -133,6 +143,9 @@ body {
   .button-grid {
     grid-template-columns: 1fr;
   }
+  .tool-btn.study {
+    grid-column: span 1;
+  }
   .hero-box {
     padding: 24px 20px;
   }
@@ -141,29 +154,26 @@ body {
 </head>
 <body>
 
-<!-- Top Navigation Bar with Watermark -->
 <div class="top-bar">
   <h1 class="brand-title">DSM TRAINING TOOL</h1>
   <div class="watermark">Created By Mangesh Lakhe</div>
 </div>
 
-<!-- Homepage Central Hub Container -->
 <div class="main-container">
   <div class="hero-box">
     <h2>Welcome to the DSM Training Portal</h2>
-    <p>Select a tool below to access interactive rate evaluations, dynamic single-block pricing models, or automated MERC rule compliance time-series simulations.</p>
+    <p>Select a tool below to access interactive rate evaluations, dynamic single-block pricing models, automated MERC rule compliance time-series simulations, or reference materials.</p>
     
     <div class="button-grid">
-      <!-- Replace 'dsmcalc.html' with the actual path/filename of your calculator page -->
       <a href="dsmcalc.html" class="tool-btn">DSM Calculator</a>
       
-      <!-- Replace 'dsmsimu.html' with the actual path/filename of your simulator page -->
       <a href="dsmsimu.html" class="tool-btn simulator">DSM SIMULATOR</a>
+      
+      <a href="studymaterial.html" class="tool-btn study">STUDY MATERIAL</a>
     </div>
   </div>
 </div>
 
-<!-- Bottom Footer -->
 <div class="footer">
   Deviation Settlement Mechanism (DSM) Interactive Training &amp; Regulatory Validation Suite &copy; 2026
 </div>
