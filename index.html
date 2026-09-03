@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DSM Training Tool - Homepage</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Top Navigation Bar */
+.top-bar {
+  background: #ffffff;
+  border-bottom: 3px solid #0d1b2a;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0d1b2a;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Signature Watermark Style */
+.watermark {
+  font-family: 'Brush Script MT', cursive, sans-serif;
+  font-size: 18px;
+  color: #475569;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Main Content Center Layout */
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.hero-box {
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 40px 60px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.hero-box h2 {
+  color: #0d1b2a;
+  font-size: 22px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-weight: 800;
+}
+
+.hero-box p {
+  color: #475569;
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+/* Clickable Selection Buttons */
+.button-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tool-btn {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 16px 20px;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tool-btn:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tool-btn.simulator {
+  background: #16a34a;
+}
+
+.tool-btn.simulator:hover {
+  background: #15803d;
+}
+
+/* Footer Section */
+.footer {
+  text-align: center;
+  padding: 14px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  border-top: 1px solid #cbd5e1;
+  background: #ffffff;
+}
+
+@media(max-width: 600px) {
+  .button-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-box {
+    padding: 24px 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Top Navigation Bar with Watermark -->
+<div class="top-bar">
+  <h1 class="brand-title">DSM TRAINING TOOL</h1>
+  <div class="watermark">Created By Mangesh Lakhe</div>
+</div>
+
+<!-- Homepage Central Hub Container -->
+<div class="main-container">
+  <div class="hero-box">
+    <h2>Welcome to the DSM Training Portal</h2>
+    <p>Select a tool below to access interactive rate evaluations, dynamic single-block pricing models, or automated MERC rule compliance time-series simulations.</p>
+    
+    <div class="button-grid">
+      <!-- Replace '/storage/emulated/0/DsmHtmlFiles/dsmcalc.html' with the actual path/filename of your calculator page -->
+      <a href="Internal storage/storage/emulated/0/DsmHtmlFiles/dsmcalc.html" class="tool-btn">DSM Calculator</a>
+      
+      <!-- Replace '/storage/emulated/0/DsmHtmlFiles/dsmsimu.html' with the actual path/filename of your simulator page -->
+      <a href="Internal storage/storage/emulated/0/DsmHtmlFiles/dsmsimu.html" class="tool-btn simulator">DSM SIMULATOR</a>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Footer -->
+<div class="footer">
+  Deviation Settlement Mechanism (DSM) Interactive Training &amp; Regulatory Validation Suite &copy; 2026
+</div>
+
+</body>
+</html>

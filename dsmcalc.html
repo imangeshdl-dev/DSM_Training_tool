@@ -1,0 +1,485 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DSM Interactive Curve</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Arial,sans-serif;background:#edf2f7;color:#111;margin:0}
+.wrap{max-width:1600px;margin:16px auto;padding:0 16px}
+
+/* Top Header Centered Layout with Absolute Signature Position on Top Right */
+.header-row{display:flex;justify-content:center;align-items:center;margin-bottom:14px;position:relative}
+h1.main-title{color:#0d1b2a;margin:0;font-size:18px;text-align:center;font-weight:700;letter-spacing:0.5px}
+.signature-watermark{position:absolute;right:0;top:50%;transform:translateY(-50%);font-family:'Caveat', cursive;font-size:22px;color:#334155;font-weight:700;letter-spacing:0.5px;pointer-events:none;white-space:nowrap}
+
+/* Unified Grid Layout for Both Top and Bottom Sections */
+.grid-main, .formula-split{display:grid;grid-template-columns:18% 64% 18%;gap:14px;align-items:stretch}
+.card{background:#fff;border:2px solid #cbd5e1;border-radius:10px;padding:12px;box-shadow:0 4px 6px rgba(0,0,0,0.08);box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;height:100%}
+
+label{display:block;font-weight:700;margin:0 0 2px;font-size:11px;color:#0d1b2a}
+input, select{width:100%;box-sizing:border-box;padding:6px 8px;border:2px solid #94a3b8;border-radius:6px;font-size:12px;font-weight:700;color:#0f172a;background:#fff}
+input[readonly]{background-color:#e2e8f0;color:#1e293b;cursor:not-allowed;font-weight:bold}
+
+/* Inputs Flex Box */
+.inputs-container{display:flex;flex-direction:column;justify-content:space-between;flex:1;margin-top:6px}
+.input-group{display:flex;flex-direction:column;justify-content:center;flex:1}
+
+/* Canvas Container */
+.canvas-container{flex:1;display:flex;flex-direction:column;min-height:0}
+canvas{width:100%;flex:1;border:2px solid #94a3b8;border-radius:8px;background:#fff;min-height:280px}
+
+/* Outputs Container */
+.outputs-container{display:flex;flex-direction:column;flex:1;justify-content:space-between}
+.metric{display:flex;flex-direction:column;gap:5px;margin-top:6px;flex:1;justify-content:space-between}
+.metric div{background:#e2e8f0;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;font-size:11px;font-weight:700;color:#0f172a;display:flex;flex-direction:column;justify-content:center;flex:1}
+.metric b{display:block;font-size:12.5px;margin-top:2px;word-break:break-word;color:#020617}
+
+/* Status Colors */
+.status{padding:8px 10px;border-radius:6px;margin-top:8px;font-weight:700;font-size:11px;line-height:1.25}
+.green-bg{background:#dcfce7;color:#14532d;border:2px solid #22c55e} 
+.red-bg{background:#fee2e2;color:#7f1d1d;border:2px solid #ef4444}
+
+.note{font-size:11px;color:#0f172a;font-weight:700;line-height:1.3;margin-top:4px}
+
+/* Fixed Table Layout to Fill Parent Height */
+table{border-collapse:collapse;width:100%;height:100%;margin-top:0}
+th,td{border:2px solid #94a3b8;padding:6px;font-size:11px;text-align:left;line-height:1.3;color:#0f172a;font-weight:600} 
+th{background:#0d1b2a;color:#fff;font-weight:700}
+
+/* Bottom Split Section Spacing */
+.formula-split{margin-top:14px;font-size:11.5px;}
+.formula-split b{color:#0d1b2a;display:block;margin-bottom:4px;font-size:12.5px;font-weight:800}
+
+/* Updated Interp Box with Full Flex Fill */
+.interp-box{background:#ffffff;border:2px solid #94a3b8;padding:8px;border-radius:6px;flex:1;box-sizing:border-box;display:flex;flex-direction:column;height:100%}
+
+/* Combined Single Box Container Layout */
+.single-formula-box{background:#ffffff;border:2px solid #94a3b8;padding:8px 10px;border-radius:6px;color:#0f172a;font-size:11px;line-height:1.45;flex:1;box-sizing:border-box;font-weight:600;display:flex;flex-direction:column;justify-content:space-between}
+.formula-section-title{font-weight:800;color:#0d1b2a;margin-bottom:2px;font-size:11.5px}
+.active-formula-inline{background:#dcfce7;border-left:4px solid #16a34a;padding:4px 8px;border-radius:4px;font-weight:800;color:#14532d;font-size:11.5px;word-break:break-word;margin:3px 0 8px 0}
+.formula-divider{border-top:2px dashed #94a3b8;margin:8px 0;padding-top:6px}
+
+/* Combined Calculation Grid Layout Box (2 Columns for Base & Add Penalty) */
+.calc-grid-box{background:#ffffff;border:2px solid #94a3b8;padding:10px 12px;border-radius:6px;color:#0f172a;font-family:monospace;font-size:14.5px;line-height:1.5;flex:1;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;gap:6px;font-weight:700}
+.calc-top-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calc-col{background:#f1f5f9;border:2px solid #cbd5e1;padding:8px 10px;border-radius:5px;display:flex;flex-direction:column;justify-content:flex-start}
+.calc-bottom-row{grid-column:1 / -1;background:#e2e8f0;border:2px solid #94a3b8;padding:8px 10px;border-radius:5px;font-weight:bold;margin-bottom:0}
+.calc-section-title{font-weight:800;color:#0d1b2a;border-bottom:2px solid #cbd5e1;padding-bottom:2px;margin-bottom:4px;font-family:Arial,sans-serif;font-size:15px}
+
+/* Dynamic Color Utilities */
+.val-green{color:#15803d;font-weight:800}
+.val-red{color:#b91c1c;font-weight:800}
+.val-neutral{color:#0f172a;font-weight:800}
+
+@media(max-width:1200px){
+  .grid-main, .formula-split{grid-template-columns:1fr}
+  .calc-top-row{grid-template-columns:1fr}
+  .signature-watermark { position: static; transform: none; text-align: center; margin-top: 6px; }
+  .header-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header-row">
+  <h1 class="main-title">TRAINING TOOL COMPARING APPLICABLE DSM RATE &amp; ECONOMIC OPERATION</h1>
+  <div class="signature-watermark">Created By MANGESH LAKHE</div>
+</div>
+
+<div class="grid-main">
+
+<div class="card">
+  <h2 style="font-size:14px;margin:0 0 4px;color:#0d1b2a;font-weight:800;">Inputs</h2>
+  <div class="inputs-container">
+    <div class="input-group">
+      <label>Daily ACP, P (Paise/kWh)</label>
+      <input id="acp" type="number" step="0.01" value="309.98">
+    </div>
+    <div class="input-group">
+      <label>Cap Rate (Paise/kWh)</label>
+      <input id="cap" type="number" step="0.01" value="394.30">
+    </div>
+    <div class="input-group">
+      <label>MOD Rate (Paise/kWh)</label>
+      <input id="mod" type="number" step="0.01" value="250">
+    </div>
+    <div class="input-group">
+      <label>Avg Freq (Hz)</label>
+      <input id="freq" type="number" step="0.01" value="49.90">
+    </div>
+    <div class="input-group">
+      <label>Sched Gen, SG (MW)</label>
+      <input id="sg" type="number" step="0.01" value="575">
+    </div>
+    <div class="input-group">
+      <label>Actual Gen, AG (MW)</label>
+      <input id="ag" type="number" step="0.01" value="375">
+    </div>
+    <div class="input-group">
+      <label>Volume Limit (MW) [Auto]</label>
+      <input id="maxvol" type="number" step="0.01" value="30.00" readonly title="Auto-calculated per DSM procedure">
+    </div>
+    <div class="input-group">
+      <label>Consecutive Sign Mode (Test Tool)</label>
+      <select id="sign_mode">
+        <option value="normal">Live Deviation Sign</option>
+        <option value="force_6_neg" selected>Force 6 Consecutive Negative Blocks</option>
+        <option value="force_6_pos">Force 6 Consecutive Positive Blocks</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="font-size:14px;margin:0 0 6px;text-align:center;color:#0d1b2a;font-weight:800;">Frequency base DSM curve</h2>
+  <div class="canvas-container">
+    <canvas id="curve" width="1000" height="320"></canvas>
+  </div>
+  <div class="note" style="text-align:center;">Dashed line: Cap Rate. Dotted line: MOD Rate. Crossover indicates settlement impact.</div>
+</div>
+
+<div class="card">
+  <div class="outputs-container">
+    <div>
+      <h2 style="font-size:14px;margin:0 0 4px;color:#0d1b2a;font-weight:800;">Outputs</h2>
+      <div style="padding:4px 6px;border-radius:5px;background:#cbd5e1;color:#0f172a;font-size:10.5px;font-weight:800">Live Calculation</div>
+    </div>
+    <div class="metric">
+      <div>Rounded Freq of block<b id="rf">—</b></div>
+      <div>Deviation<b id="dev">—</b></div>
+      <div>ADSM Rate<b id="raw">—</b></div>
+      <div>Base DSM (₹)<b id="base_dsm">—</b></div>
+      <div>Additional DSM (₹)<b id="add_dsm">—</b></div>
+      <div>Sign Change Penalty (20%)<b id="sign_penalty">—</b></div>
+      <div>Total Net Settlement<b id="settle">—</b></div>
+    </div>
+  </div>
+  <div id="status" class="status"></div>
+</div>
+
+</div>
+
+<div class="formula-split">
+  <div class="card">
+    <b>DSM Formulas:</b>
+    <div class="single-formula-box">
+      <div>
+        <div class="formula-section-title">Applicable ADSM Rate Formula for <span id="active_f">49.90</span> Hz:</div>
+        <div id="active_formula_display" class="active-formula-inline">[400 + 6 × P / 16]</div>
+      </div>
+      
+      <div class="formula-divider">
+        <div class="formula-section-title">Base DSM Formula:</div>
+        <div id="base_formula_text">Base DSM = -(Under-Injection MW × Effective Rate P/kWh × 2.5)</div>
+      </div>
+      
+      <div class="formula-divider">
+        <div class="formula-section-title">Add DSM Penalty Formula:</div>
+        <div id="add_formula_text">Add DSM Penalty = -[S1(20%) + S2(40%) + S3(100%)] × Effective Rate × 2.5</div>
+      </div>
+
+      <div class="formula-divider">
+        <div class="formula-section-title">Sign Change Rule Penalty (20%):</div>
+        <div id="sign_formula_text">20% extra charge on absolute base DSM if 6 consecutive blocks maintain same sign.</div>
+      </div>
+
+      <div class="formula-divider">
+        <div class="formula-section-title">Total DSM Settlement:</div>
+        <div id="total_formula_text">Total DSM Settlement = Base DSM + Add DSM Penalty + Sign Change Penalty</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <b>DSM Money Calculation Steps:</b>
+    <div id="active_calc_display" style="flex:1;display:flex;flex-direction:column;">—</div>
+  </div>
+
+  <div class="card">
+    <b>How to interpret the crossover:</b>
+    <div class="interp-box">
+      <table>
+        <tr><th>Condition</th><th>Strategy Interpretation</th></tr>
+        <tr><td><b>ADSM &gt; MOD</b></td><td>DSM receivable exceeds MOD threshold → consider over-injection within volume limit.</td></tr>
+        <tr><td><b>ADSM &lt; MOD</b></td><td>DSM receivable below threshold → maintain AG = SG to avoid fuel-cost loss.</td></tr>
+        <tr><td><b>Freq ≥ 50.05 Hz</b></td><td>Normal DSM rate is zero; over-injection prohibited. Penalty equal to ACP applies.</td></tr>
+        <tr><td><b>Freq &lt; 49.85 Hz</b></td><td>Under-injection incurs deviation penalties; over-injection only considered if ADSM &gt; MOD.</td></tr>
+        <tr><td><b>Sign Change Rule</b></td><td>Must alter sign at least once every 6 consecutive blocks or face a 20% surcharge.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+let blockHistory = []; 
+
+function checkSignChangeViolation(history) {
+  if (history.length < 6) return false; 
+  const last6 = history.slice(-6);
+  const allPositive = last6.every(b => b.dev > 0);
+  const allNegative = last6.every(b => b.dev < 0);
+  return allPositive || allNegative; 
+}
+
+function applySignChangePenalty(dailyBaseDSM, violationTriggered) {
+  if (violationTriggered) {
+    return Math.abs(dailyBaseDSM) * 0.20; 
+  }
+  return 0;
+}
+
+function getPVData(freq, P) {
+  let f = Math.round((Number(freq) + 1e-9) * 100) / 100;
+  
+  if (f >= 50.05) return { rate: 0, formula: "0 (Zero Rate)" };
+  if (f >= 50.04) return { rate: (1 * P) / 5, formula: "1 × P / 5" };
+  if (f >= 50.03) return { rate: (2 * P) / 5, formula: "2 × P / 5" };
+  if (f >= 50.02) return { rate: (3 * P) / 5, formula: "3 × P / 5" };
+  if (f >= 50.01) return { rate: (4 * P) / 5, formula: "4 × P / 5" };
+  if (f >= 50.00) return { rate: P, formula: "P (Area Clearing Price)" };
+  if (f >= 49.85) {
+    let k = Math.round((50.00 - f) / 0.01);
+    let offset = 50 * k;
+    let factor = 16 - k;
+    return { rate: offset + (factor * P / 16), formula: offset + " + " + factor + " × P / 16" };
+  }
+  return { rate: 800, formula: "800 (Maximum Cap Rate Ceiling)" };
+}
+
+function fmt(x){return isFinite(x)?Number(x).toLocaleString(undefined,{maximumFractionDigits:2}):"—";}
+
+function colorLabelAndVal(label, val){
+  if (val > 0) return `<span class="val-green">${label ? label + ' = ' : ''}+₹${fmt(val)}</span>`;
+  if (val < 0) return `<span class="val-red">${label ? label + ' = ' : ''}-₹${fmt(Math.abs(val))}</span>`;
+  return `<span class="val-neutral">${label ? label + ' = ' : ''}₹0</span>`;
+}
+
+function formatExpression(b, a, s) {
+  let parts = [];
+  if (b > 0) parts.push(`₹${fmt(b)}`);
+  else if (b < 0) parts.push(`-₹${fmt(Math.abs(b))}`);
+  else parts.push(`₹0`);
+  
+  if (a > 0) parts.push(`₹${fmt(a)}`);
+  else if (a < 0) parts.push(`(-₹${fmt(Math.abs(a))})`);
+  else parts.push(`₹0`);
+  
+  if (s > 0) parts.push(`₹${fmt(s)}`);
+  else if (s < 0) parts.push(`(-₹${fmt(Math.abs(s))})`);
+  else parts.push(`₹0`);
+  
+  return parts.join(" + ");
+}
+
+function colorTextOnly(text, val){
+  if (val > 0) return `<span class="val-green">${text}</span>`;
+  if (val < 0) return `<span class="val-red">${text}</span>`;
+  return `<span class="val-neutral">${text}</span>`;
+}
+
+function calc(){
+ const P=+acp.value, f=+freq.value, sg=+document.getElementById('sg').value, ag=+document.getElementById('ag').value, MOD=+mod.value, CAP=+cap.value;
+ const rf=Math.round((f+1e-9)*100)/100, dev=ag-sg;
+ 
+ const signMode = document.getElementById('sign_mode').value;
+ blockHistory = [];
+ if (signMode === 'force_6_neg') {
+   for(let i=1; i<=6; i++) blockHistory.push({ block: i, dev: -10 });
+ } else if (signMode === 'force_6_pos') {
+   for(let i=1; i<=6; i++) blockHistory.push({ block: i, dev: 10 });
+ } else {
+   blockHistory.push({ block: 1, dev: dev });
+ }
+
+ const computedVL = sg <= 40 ? Math.max(5, 0.12 * sg) : Math.min(0.12 * sg, 30);
+ document.getElementById('maxvol').value = computedVL.toFixed(2);
+ const vl = computedVL;
+
+ const pvData = getPVData(rf, P);
+ const adsm = pvData.rate;
+
+ let decision="";
+ if(rf>=50.05) decision="Regulatory zone overrides MOD: normal DSM is zero; over-injection is prohibited/penalized.";
+ else if(adsm>MOD) decision="ADSM > MOD → consider permitted over-injection opportunity.";
+ else if(adsm<MOD) decision="ADSM < MOD → maintain AG = SG.";
+ else decision="ADSM = MOD → economic indifference point.";
+ 
+ let baseDSM = 0, addDSM = 0;
+ const K = 2.5; 
+ const effectiveRate = Math.min(adsm, CAP);
+ 
+ let baseFormStr = "", baseCalcStr = "";
+ let addFormStr = "", addCalcStr = "";
+
+ if(dev > 0){
+   if(rf >= 50.05){
+     baseDSM = 0;
+     addDSM = -dev * P * K;
+     baseFormStr = `Base DSM = ₹0`;
+     baseCalcStr = `Base DSM = ₹0`;
+     addFormStr = `Add DSM Penalty = -(Over-Injection MW × ACP P/kWh × 2.5)`;
+     addCalcStr = `Add DSM Penalty = -(${fmt(dev)} MW × ${fmt(P)} P/kWh × 2.5)<br>= ${colorLabelAndVal("", addDSM)}`;
+   } else {
+     const eligibleDev = Math.min(dev, vl);
+     baseDSM = eligibleDev * effectiveRate * K;
+     addDSM = 0; 
+     baseFormStr = `Base DSM = +(Eligible Volume MW × Effective Rate P/kWh × 2.5)`;
+     baseCalcStr = `Volume Limit (VL) = ${fmt(vl)} MW<br>Eligible Vol = min(${fmt(dev)}, ${fmt(vl)}) = ${fmt(eligibleDev)} MW<br>Effective Rate = min(${fmt(adsm)}, ${fmt(CAP)}) = ${fmt(effectiveRate)} P/kWh<br>Base DSM = +(${fmt(eligibleDev)} MW × ${fmt(effectiveRate)} P/kWh × 2.5)<br>= ${colorLabelAndVal("", baseDSM)}`;
+     addFormStr = `Add DSM Penalty = ₹0`;
+     addCalcStr = `Add DSM Penalty = ₹0`;
+   }
+ }
+ else if(dev < 0){
+   const absDev = Math.abs(dev);
+   if(rf < 49.85){
+     const baseRate = Math.max(800, CAP);
+     baseDSM = -absDev * baseRate * K;
+     addDSM = -absDev * CAP * K * 1.0;
+     baseFormStr = `Base DSM = -(Under-Injection MW × max(800, Cap Rate) × 2.5)`;
+     baseCalcStr = `Base DSM = -(${fmt(absDev)} MW × max(800, ${fmt(CAP)}) P/kWh × 2.5)<br>= ${colorLabelAndVal("", baseDSM)}`;
+     addFormStr = `Add DSM Penalty = -(Under-Injection MW × Cap Rate × 100% × 2.5)`;
+     addCalcStr = `Add DSM Penalty = -(${fmt(absDev)} MW × ${fmt(CAP)} P/kWh × 100% × 2.5)<br>= ${colorLabelAndVal("", addDSM)}`;
+   } else {
+     baseDSM = -absDev * effectiveRate * K;
+     baseFormStr = `Base DSM = -(Under-Injection MW × Effective Rate P/kWh × 2.5)`;
+     baseCalcStr = `Base DSM = -(${fmt(absDev)} MW × ${fmt(effectiveRate)} P/kWh × 2.5)<br>= ${colorLabelAndVal("", baseDSM)}`;
+
+     if (absDev > vl) {
+       let slab1 = 0, slab2 = 0, slab3 = 0;
+       if (sg <= 40) {
+         const p12 = 0.12 * sg, p15 = 0.15 * sg, p20 = 0.20 * sg;
+         if (absDev > p12 && absDev <= p15) slab1 = absDev - p12;
+         else if (absDev > p15 && absDev <= p20) { slab1 = p15 - p12; slab2 = absDev - p15; }
+         else if (absDev > p20) { slab1 = p15 - p12; slab2 = p20 - p15; slab3 = absDev - p20; }
+       } else {
+         if (absDev > 30 && absDev <= 40) slab1 = absDev - 30;
+         else if (absDev > 40 && absDev <= 50) { slab1 = 10; slab2 = absDev - 40; }
+         else if (absDev > 50) { slab1 = 10; slab2 = 10; slab3 = absDev - 50; }
+       }
+       
+       const s1_val = slab1 * 0.20 * effectiveRate * K;
+       const s2_val = slab2 * 0.40 * effectiveRate * K;
+       const s3_val = slab3 * 1.00 * effectiveRate * K;
+       addDSM = -(s1_val + s2_val + s3_val);
+       
+       addFormStr = `Add DSM Penalty = -[S1(20%) + S2(40%) + S3(100%)] × Effective Rate × 2.5`;
+       addCalcStr = `Add Penalty Slabs:<br>S1 (20%): ${fmt(slab1)} MW × 20% × ${fmt(effectiveRate)} × 2.5 = ₹${fmt(s1_val)}<br>S2 (40%): ${fmt(slab2)} MW × 40% × ${fmt(effectiveRate)} × 2.5 = ₹${fmt(s2_val)}<br>S3 (100%): ${fmt(slab3)} MW × 100% × ${fmt(effectiveRate)} × 2.5 = ₹${fmt(s3_val)}<br>${colorTextOnly("Total Add Penalty", addDSM)} = ${colorLabelAndVal("", addDSM)}`;
+     } else {
+       addDSM = 0;
+       addFormStr = `Add DSM Penalty = ₹0`;
+       addCalcStr = `Add DSM Penalty = ₹0 (Within VL ${fmt(vl)} MW)`;
+     }
+   }
+ } else {
+   baseFormStr = `Base DSM = ₹0`;
+   baseCalcStr = `Base DSM = ₹0 (AG = SG)`;
+   addFormStr = `Add DSM Penalty = ₹0`;
+   addCalcStr = `Add DSM Penalty = ₹0 (AG = SG)`;
+ }
+
+ const violationTriggered = checkSignChangeViolation(blockHistory);
+ const signChangePenaltyVal = applySignChangePenalty(baseDSM, violationTriggered);
+ const signChangePenaltyCost = violationTriggered ? -signChangePenaltyVal : 0;
+ const settlement = baseDSM + addDSM + signChangePenaltyCost;
+
+ const calcSingleBoxHtml = `
+<div class="calc-grid-box">
+  <div class="calc-bottom-row" style="background:${violationTriggered ? '#fee2e2' : '#e2e8f0'}">
+    <div class="calc-section-title" style="border:none;margin-bottom:2px;font-size:15px;">Total DSM Settlement (Incl. Sign Change Rule):</div>
+    <div style="font-size:14.5px;">Settlement = ${formatExpression(baseDSM, addDSM, signChangePenaltyCost)} = ${colorLabelAndVal("", settlement)}<br>
+    <small style="color:${violationTriggered ? '#b91c1c' : '#15803d'};font-weight:800;font-size:13px;">${violationTriggered ? '⚠️ Sign Change Rule Violated: 6 consecutive unidirectional blocks detected (+20% base penalty applied).' : '✓ Sign Change Rule Complied: Sign changed or history < 6 blocks.'}</small></div>
+  </div>
+  <div class="calc-top-row">
+    <div class="calc-col">
+      <div class="calc-section-title">Base DSM Calc</div>
+      ${baseCalcStr}
+    </div>
+    <div class="calc-col">
+      <div class="calc-section-title">Add Penalty Calc</div>
+      ${addCalcStr}
+    </div>
+  </div>
+</div>`;
+
+ document.getElementById('rf').textContent=fmt(rf)+" Hz";
+ document.getElementById('dev').textContent=(dev>=0?"+":"")+fmt(dev)+" MW";
+ document.getElementById('raw').textContent=fmt(adsm)+" Paise/kWh";
+ 
+ document.getElementById('base_dsm').innerHTML = colorLabelAndVal("", baseDSM);
+ document.getElementById('add_dsm').innerHTML = colorLabelAndVal("", addDSM);
+ document.getElementById('sign_penalty').innerHTML = colorLabelAndVal("", signChangePenaltyCost);
+ document.getElementById('settle').innerHTML = colorLabelAndVal("", settlement);
+ 
+ document.getElementById('active_f').textContent = rf.toFixed(2);
+ document.getElementById('active_formula_display').innerHTML = pvData.formula;
+ document.getElementById('base_formula_text').textContent = baseFormStr;
+ document.getElementById('add_formula_text').textContent = addFormStr;
+ document.getElementById('active_calc_display').innerHTML = calcSingleBoxHtml;
+
+ const statusEl = document.getElementById('status');
+ statusEl.textContent = decision + (violationTriggered ? " [Sign Change Violation Active]" : "");
+ statusEl.className = "status " + (settlement >= 0 ? "green-bg" : "red-bg");
+
+ draw(rf,P,MOD,CAP);
+}
+
+function draw(mark,P,MOD,CAP){
+ const c=document.getElementById('curve'),ctx=c.getContext('2d'),W=c.width,H=c.height,L=55,R=20,T=20,B=45;
+ const x0=49.83, x1=50.13, y1=800;
+ const X=x=>L+(x-x0)/(x1-x0)*(W-L-R), Y=y=>H-B-y/y1*(H-T-B);
+ 
+ ctx.clearRect(0,0,W,H);ctx.font="bold 11.5px Arial";ctx.strokeStyle="#cbd5e1";ctx.lineWidth=1.5;
+ 
+ for(let y=0; y<=800; y+=50){
+   ctx.beginPath();ctx.moveTo(L,Y(y));ctx.lineTo(W-R,Y(y));ctx.stroke();
+   ctx.fillStyle="#0f172a";ctx.fillText(y,L-38,Y(y)+4);
+ }
+ 
+ for(let i=0; i<=30; i++){
+   let x = Math.round((49.83 + i * 0.01) * 100) / 100;
+   ctx.beginPath();ctx.moveTo(X(x),H-B);ctx.lineTo(X(x),T);ctx.stroke();
+   ctx.fillStyle="#0f172a";ctx.save();
+   ctx.translate(X(x)-5,H-B+15);ctx.rotate(-Math.PI/3);
+   ctx.fillText(x.toFixed(2),0,0);ctx.restore();
+ }
+ 
+ ctx.strokeStyle="#0d9488";ctx.lineWidth=3;ctx.beginPath();
+ for(let i=0; i<=30; i++){
+   let x = Math.round((49.83 + i * 0.01) * 100) / 100;
+   let y = getPVData(x,P).rate;
+   i ? ctx.lineTo(X(x),Y(y)) : ctx.moveTo(X(x),Y(y));
+ }
+ ctx.stroke();
+ 
+ ctx.strokeStyle="#c2410c";ctx.lineWidth=2.5;ctx.setLineDash([6,4]);ctx.beginPath();
+ ctx.moveTo(L,Y(CAP));ctx.lineTo(W-R,Y(CAP));ctx.stroke();
+ 
+ ctx.strokeStyle="#7c3aed";ctx.lineWidth=2.5;ctx.setLineDash([3,3]);ctx.beginPath();
+ ctx.moveTo(L,Y(MOD));ctx.lineTo(W-R,Y(MOD));ctx.stroke();ctx.setLineDash([]);
+ 
+ ctx.fillStyle="#c2410c";ctx.fillText("Cap "+fmt(CAP),W-105,Y(CAP)-5);
+ ctx.fillStyle="#7c3aed";ctx.fillText("MOD "+fmt(MOD),W-95,Y(MOD)-5);
+ 
+ if(mark>=49.83 && mark<=50.13){
+   let yy=getPVData(mark,P).rate;
+   ctx.fillStyle="#0d1b2a";ctx.beginPath();
+   ctx.arc(X(mark),Y(yy),6,0,2*Math.PI);ctx.fill();
+   ctx.fillText("ADSM",X(mark)+8,Y(yy)-6);
+ }
+ 
+ ctx.fillStyle="#0f172a";ctx.font="bold 12px Arial";ctx.fillText("Frequency (Hz)",W/2-40,H-5);
+}
+
+document.querySelectorAll("input, select").forEach(el => {
+  el.addEventListener("input", calc);
+  el.addEventListener("change", calc);
+});
+calc();
+</script>
+</body>
+</html>
